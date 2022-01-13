@@ -21,6 +21,7 @@ import com.oltpbenchmark.api.Loader;
 import com.oltpbenchmark.api.LoaderThread;
 import com.oltpbenchmark.catalog.Table;
 import com.oltpbenchmark.util.SQLUtil;
+import com.oltpbenchmark.benchmarks.tpcds.util.TableGenerator;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -595,5 +596,26 @@ public class TPCDSLoader extends Loader<TPCDSBenchmark> {
         String sql = SQLUtil.getInsertSQL(catalog_tbl, this.getDatabaseType());
         PreparedStatement prepStmt = conn.prepareStatement(sql);
         loadData(conn, tableName, prepStmt, types);
+    }
+
+    // child table is specified for certain parent tables during generation.
+    private void genTable(Connection conn, String tableName, TPCDSConstants.CastTypes[] types,
+        TableGenerator generator, String childTableName,
+        TPCDSConstants.CastTypes[] childTypes) throws SQLException {
+        // base table prepared statement.
+        Table baseTbl = benchmark.getCatalog().getTable(tableName);
+        String sql = SQLUtil.getInsertSQL(baseTbl, this.getDatabaseType());
+        PreparedStatement prepStmt = conn.prepareStatement(sql);
+
+        // child table.
+        final boolean hasChild = (childTableName != null);
+        PreparedStatement childPrepStmt = null;
+        if (hasChild) {
+            Table childTbl = benchmark.getCatalog().getTable(childTableName);
+            sql = SQLUtil.getInsertSQL(childTbl, this.getDatabaseType());
+            childPrepStmt = conn.prepareStatement(sql);
+        }
+
+        // iterate all rows to generate parent/child queries in batch.
     }
 }

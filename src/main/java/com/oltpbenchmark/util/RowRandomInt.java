@@ -21,6 +21,7 @@ public class RowRandomInt {
     private final int seedsPerRow;
 
     private long seed;
+    private long initialSeed;
     private int usage;
 
     /**
@@ -29,7 +30,15 @@ public class RowRandomInt {
      */
     public RowRandomInt(long seed, int seedsPerRow) {
         this.seed = seed;
+        this.initialSeed = this.seed;
         this.seedsPerRow = seedsPerRow;
+    }
+
+    /**
+     * Create a random given 3 as seed.
+     */
+    public RowRandomInt(int seedsPerRow) {
+        this(3L, seedsPerRow);
     }
 
     /**
@@ -48,6 +57,7 @@ public class RowRandomInt {
      */
     public RowRandomInt(int globalColumnNumber, long seed, int seedsPerRow) {
         this.seed = seed + globalColumnNumber * (MODULUS / 799);
+        this.initialSeed = this.seed;
         this.seedsPerRow = seedsPerRow;
     }
 
@@ -71,6 +81,31 @@ public class RowRandomInt {
         seed = (seed * MULTIPLIER) % MODULUS;
         usage++;
         return seed;
+    }
+
+    public double nextDouble() {
+        return (double)nextRand() / (double)Integer.MAX_VALUE;
+    }
+
+    public void resetSeed()
+    {
+        seed = initialSeed;
+        usage = 0;
+    }
+
+    public int getSeedsUsed()
+    {
+        return this.usage;
+    }
+
+    public void resetSeedsUsed()
+    {
+        this.usage = 0;
+    }
+
+    public int getSeedsPerRow()
+    {
+        return this.seedsPerRow;
     }
 
     /**
